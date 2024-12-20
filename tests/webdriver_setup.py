@@ -1,5 +1,8 @@
 import pytest
 import time
+
+from selenium.webdriver.chrome.service import Service
+
 from utils import config_setup
 from config.TestData import TestData
 from selenium import webdriver
@@ -20,8 +23,10 @@ class Browser:
     EDGE = 'edge'
 
 
+
 def build_browser(browser, experimental_options: Optional[List[dict]],
                   browser_options: List[str], version: str, driver_manager: bool, path=None):
+    global options
     if browser == Browser.CHROME:
         options = build_browser_options(Browser.CHROME, browser_options, experimental_options)
 
@@ -30,28 +35,50 @@ def build_browser(browser, experimental_options: Optional[List[dict]],
                 if not os.path.exists(path):
                     os.makedirs(path, exist_ok=True)
                 time.sleep(1)
-                return webdriver.Chrome(ChromeDriverManager(version=version, path=path).install(), options=options)
+                service = Service()
+                options = webdriver.ChromeOptions()
+                if browser_options:
+                    options.headless = True
+                preferences = experimental_options[0]
+                options.add_experimental_option("prefs", preferences)
+                return webdriver.Chrome(options=options,service=service)
             except FileNotFoundError or OSError:
                 if not os.path.exists(path):
                     time.sleep(3)
                     os.makedirs(path, exist_ok=True)
-                return webdriver.Chrome(ChromeDriverManager(version=version, path=path).install(), options=options)
+                options = webdriver.ChromeOptions()
+                if browser_options:
+                    options.headless = True
+                service = Service()
+                preferences = experimental_options[0]
+                options.add_experimental_option("prefs", preferences)
+                return webdriver.Chrome(options=options, service=service)
         else:
-            return webdriver.Chrome(executable_path=TestData.CHROME_EXECUTABLE,
-                                    service_log_path=os.path.devnull,
-                                    options=options)
+            options = webdriver.ChromeOptions()
+            if browser_options:
+                options.headless = True
+            service = Service()
+            preferences = experimental_options[0]
+            options.add_experimental_option("prefs", preferences)
+            return webdriver.Chrome(options=options, service=service)
 
     elif browser == Browser.FIREFOX:
         options = build_browser_options(Browser.FIREFOX, browser_options, experimental_options)
 
         if driver_manager:
-            return webdriver.Firefox(executable_path=GeckoDriverManager(version=version).install(),
-                                     service_log_path=os.devnull,
-                                     options=options)
+            service = Service()
+            options = webdriver.FirefoxOptions()
+            if browser_options:
+                options.headless = True
+
+            return webdriver.Firefox(options=options, service=service)
         else:
-            return webdriver.Firefox(executable_path=TestData.FIREFOX_EXECUTABLE,
-                                     service_log_path=os.path.devnull,
-                                     options=options)
+            service = Service()
+            options = webdriver.FirefoxOptions()
+            if browser_options:
+                options.headless = True
+            return webdriver.Firefox(options=options, service=service)
+
 
 
 def build_browser_options(browser, browser_options: List[str], experimental_options: Optional[List[dict]]):

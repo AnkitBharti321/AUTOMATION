@@ -105,7 +105,7 @@ def init_driver(request, project_root, main_config, test_run, rp_logger, downloa
         shutil.rmtree(str(temp_driver_path))
     except Exception:
         pass
-    login.org_admin_ps_error(test_start_time)
+   
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -125,11 +125,11 @@ def test_run(project_root, request) -> str:
     temp_file = data_helpers.random_with_n_digits(6)
     test_data_path = re.sub(r"\\tests", "", os.path.dirname(__file__))
     # test_results_dir = os.path.join(test_data_path, "../test_data/test_results")
-    test_results_dir = os.path.join(test_data_path, "..\\test_data\\test_results")
+    test_results_dir = os.path.join(test_data_path, "../../test_data/test_results")
     global temp_download_dir
     # temp_download_dir = os.path.join(test_data_path, f"../test_data/downloads/{temp_file}")
     temp_download_dir = os.path.join(test_data_path, f"..\\test_data\downloads\{temp_file}")
-    download_dir = os.path.join(test_data_path, "../test_data/downloads")
+    download_dir = os.path.join(test_data_path, "../../test_data/downloads")
 
     for directories, dirs, files in os.walk(test_results_dir, topdown=False):
         if dirs:
@@ -195,7 +195,7 @@ def pytest_sessionstart(session):
 
 def remove_downloads():
     path = re.sub("/tests", "", os.path.dirname(__file__))
-    download_dir = os.path.join(path, "../test_data/downloads")
+    download_dir = os.path.join(path, "../../test_data/downloads")
     path = os.scandir(download_dir)
     try:
         for i in path:

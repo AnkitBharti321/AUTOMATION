@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 pytest = "*"
-selenium = "==4.1.0"
+selenium = "==4.13.0"
 pymupdf = "*"
 aspose-cells = "*"
 pyyaml = "*"
@@ -19,6 +19,9 @@ psycopg-binary = "*"
 pandas = "*"
 pymysql = "*"
 psycopg2 = "*"
+urllib3 = "==1.26.10"
+faker = "==4.15.0"
+self = "*"
 
 [dev-packages]
 

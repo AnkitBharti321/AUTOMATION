@@ -9,7 +9,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from utils import config_setup
 from database_connections import db_base
 from utils import data_helpers, file_helpers, database_helpers
-# from dateutil.parser import parse
+from dateutil.parser import parse
 import time
 
 # this is the parent of all pages #
@@ -29,13 +29,11 @@ class BasePage:
 
     def wait(self, timeout, ignored_exceptions: list = None):
         """Initializes WebDriverWait"""
-        return WebD
-        riverWait(self.driver, timeout, ignored_exceptions=ignored_exceptions)
+        return WebDriverWait(self.driver, timeout, ignored_exceptions=ignored_exceptions)
 
     # click methods #
     def click_element(self, by_locator=None, how=None, path=None, ajax=True, alert=False, element=None):
         perf = Performance(self.driver)
-        timing = None
 
         if ajax:
             self.wait_for_ajax()
@@ -45,19 +43,16 @@ class BasePage:
                 self.get_web_element(by_locator).click()
             except:
                 self.scroll_to_and_click(by_locator, ajax=ajax)
-            if not alert:
-                timing = perf.get()
+
         elif how is not None:
             try:
                 self.get_web_elements(how, path, ajax)[0].click()
             except:
-                self.scroll_to_and_click(how=how, path=path, ajax=False)
-            if not alert:
-                timing = perf.get()
+                self.scroll_to_and_click(how=how, path=path)
+
         elif element is not None:
             element.click()
-            if not alert:
-                timing = perf.get()
+
 
         if alert:
             text = self.wait_for_alert_and_get_text()
@@ -68,9 +63,7 @@ class BasePage:
                 raise Exception("A PS error was raised after clicking on the element")
             self.wait_for_ajax()
 
-        return timing
-
-    def scroll_to_and_click(self, by_locator=None, how=None, path=None, element=None, alert=False, ajax=True):
+    def scroll_to_and_click(self, by_locator=None, how=None, path=None, element=None, alert=False, ajax=False):
         if ajax:
             self.wait_for_ajax()
         if element is not None:
@@ -168,18 +161,20 @@ class BasePage:
         el.clear()
         el.send_keys(key)
 
-    def send_key_to_text_field_no_locator(self, how, path, keys):
-        el = self.get_web_elements(how, path)[0]
+    def send_key_to_text_field_no_locator(self, how, path, keys, clear=False, ajax=True):
+        el = self.get_web_elements(how, path, ajax)[0]
         el.click()
+        if clear:
+            el.clear()
         el.send_keys(keys)
 
     # get text methods #
 
-    def get_element_text(self, by_locator=None, how=None, path=None, element=None):
+    def get_element_text(self, by_locator=None, how=None, path=None, element=None, ajax=True):
         if by_locator is not None:
             el = self.get_web_element(by_locator).text
         elif how is not None:
-            temp = self.get_web_elements(how, path)[0]
+            temp = self.get_web_elements(how, path, ajax=ajax)[0]
             el = temp.text
         elif element is not None:
             el = element.text
@@ -275,9 +270,9 @@ class BasePage:
         el = self.get_web_element(by_locator, wait=wait)
         return el.get_attribute(attribute)
 
-    def get_elements_attribute(self, how, path, attribute):
+    def get_elements_attribute(self, how, path, attribute, ajax=True):
         attrs = []
-        els = self.get_web_elements(how, path)
+        els = self.get_web_elements(how, path, ajax)
         for i in els:
             attrs.append(i.get_attribute(attribute))
         return attrs
@@ -471,14 +466,14 @@ class BasePage:
     def short_check_for_displayed_elements(self, how, path):
         if how == "xpath":
             try:
-                el = self.driver.find_element_by_xpath(path)
+                el = self.driver.find_element(By.XPATH, path)
                 return True
             except:
                 print("Element not found")
                 return False
         elif how == "id":
             try:
-                el = self.driver.find_element_by_id(path)
+                el = self.driver.find_element(By.ID, path)
                 return True
             except:
                 print("Element not found")
@@ -595,22 +590,22 @@ class BasePage:
             el = self.driver.find_element(*by_locator)
         return el
 
-    def get_web_elements(self, how, path, ajax=True, wait=2, error_when_empty=False):
+    def get_web_elements(self, how, path, ajax=False, wait=2, error_when_empty=False):
         if ajax:
             self.wait_for_ajax()
         if how == 'id':
-            els = self.driver.find_elements_by_id(path)
+            els = self.driver.find_elements(By.ID, path)
         elif how == 'xpath':
-            els = self.driver.find_elements_by_xpath(path)
+            els = self.driver.find_elements(By.XPATH, path)
         elif how == 'css':
-            els = self.driver.find_elements_by_css_selector(path)
+            els = self.driver.find_elements(By.CSS_SELECTOR, path)
         count = 0
         while not els and count < wait:
             count += 1
             if how == 'id':
-                els = self.driver.find_elements_by_id(path)
+                els = self.driver.find_elements(By.ID, path)
             else:
-                els = self.driver.find_elements_by_xpath(path)
+                els = self.driver.find_elements(By.XPATH, path)
             if count > wait and error_when_empty:
                 raise Exception("Element not found on page")
         return els
@@ -775,8 +770,10 @@ class BasePage:
             doc_ready_state = self.driver.execute_script("return document.readyState === 'complete'")
             jquery_not_active = self.driver.execute_script("return jQuery.active === 0")
             self.sleep(0.75)
-            if jquery_loaded and doc_ready_state and jquery_not_active: break
-            else: timeout_count += 1
+            if jquery_loaded and doc_ready_state and jquery_not_active:
+                break
+            else:
+                timeout_count += 1
 
     def wait_for_and_accept_alert(self, timeout=20):
         try:
@@ -849,6 +846,10 @@ class BasePage:
             self.driver.switch_to.window(self.driver.window_handles[0])
             self.sleep(sleep)
 
+    def create_and_switch_to_new_window(self):
+        self.driver.execute_script("window.open();")
+        self.driver.switch_to.window(self.driver.window_handles[1])
+
     @staticmethod
     def sleep(wait_time):
         time.sleep(wait_time)
@@ -896,22 +897,22 @@ class BasePage:
             el = element
         elif how == "id":
             try:
-                el = self.get_web_element((By.ID, path), wait=wait)
-                self.wait_for_element_to_be_clickable(how='id', path=path)
+                el = self.get_web_element((By.ID, path), wait)
+                self.wait_for_element_to_be_clickable(how='id', path=path, timeout=wait)
             except (TimeoutException, IndexError):
                 self.driver.refresh()
                 self.wait_for_ajax()
-                el = self.get_web_element((By.ID, path), wait=wait)
-                self.wait_for_element_to_be_clickable(how='id', path=path)
+                el = self.get_web_element((By.ID, path), wait)
+                self.wait_for_element_to_be_clickable(how='id', path=path, timeout=wait)
         elif how == "xpath":
             try:
-                el = self.get_web_element((By.XPATH, path), wait=wait)
-                self.wait_for_element_to_be_clickable(how='xpath', path=path)
+                el = self.get_web_element((By.XPATH, path), wait)
+                self.wait_for_element_to_be_clickable(how='xpath', path=path, timeout=wait)
             except (TimeoutException, IndexError):
                 self.driver.refresh()
                 self.wait_for_ajax()
-                el = self.get_web_element((By.XPATH, path), wait=wait)
-                self.wait_for_element_to_be_clickable(how='xpath', path=path)
+                el = self.get_web_element((By.XPATH, path), wait)
+                self.wait_for_element_to_be_clickable(how='xpath', path=path, timeout=wait)
         self.scroll_to_js(el)
         self.sleep(1)
         self.driver.execute_script("arguments[0].click();", el)
@@ -956,5 +957,30 @@ class BasePage:
         actions.click(element).send_keys(value).send_keys(Keys.ENTER).perform()
         self.sleep(5)
 
+    def checkbox_check(self, element):
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element).click().perform()
+
     def get_current_url(self):
         return self.driver.current_url
+
+    def refresh_until_element_displayed(self, xpath, max_attempts=10):
+        attempts = 0
+        while attempts < max_attempts:
+            if self.is_element_displayed(xpath):
+                return True
+            self.refresh_page()
+            attempts += 1
+            time.sleep(1)
+        return False
+
+    def is_element_displayed(self, xpath):
+        try:
+            element = WebDriverWait(self, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
+            return element.is_displayed
+        except:
+            return False
+
+
+
+

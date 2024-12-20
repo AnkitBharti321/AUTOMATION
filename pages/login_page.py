@@ -7,15 +7,22 @@ from selenium.webdriver.common.keys import Keys
 
 # from database_connections import organizations
 from pages.base_page import BasePage
+
+from faker import Faker
+
+# API AUTOMATION
+import requests
+import random
+import string
+
 # from pages.organization.organization_page import OrganizationPage
 # from pages.sys_admin.sys_admin_change_password_page import SysAdminChangePasswordPage
 # from pages.sys_admin.sys_admin_my_account_page import SysAdminMyAccountPage
 # from utils import database_helpers
 
-
 class LoginPage(BasePage):
     # region Locators
-    USERNAME_FIELD = By.ID, "user_name"
+    # USERNAME_FIELD = By.ID, "user_name"
     PASSWORD_FIELD = By.ID, "password"
     LOGIN_BUTTON_ELEMENT = By.ID, "logon_submit"
     NEED_HELP_EL = By.XPATH, '//*[@id="need_help_link"]'
@@ -75,19 +82,192 @@ class LoginPage(BasePage):
     HCM_DASHBOARD_USERNAME = By.ID, "txtUserEmail"
     HCM_DASHBOARD_PASSWORD = By.ID, "txtUserPassword"
     HCM_DASHBOARD_SUBMIT = By.XPATH, "//button[@type='submit']"
+
+    # Amazon search
+    SEARCH_AMAZON = By.XPATH, "//input[@id='twotabsearchtextbox']"
+    SEARCH_SUBMIT_BUTTON = By.XPATH, "//input[@id='nav-search-submit-button']"
+    TEXT_SEARCHED_MOBILE_PHONE = By.XPATH, "//div[@cel_widget_id='MAIN-SEARCH_RESULTS-2']//div//h2"
+    GO_TO_CART_PAGE = By.XPATH, "//div[@id='nav-cart-text-container']"
+    TODAYS_DEAL = By.XPATH, "//a[@href='/deals?ref_=nav_cs_gb']"
+    RADIO_BUTTON_PRICE = By.XPATH, "(//div//input[@name='price'])[2]"
+    USER_NAME_SWAG = By.XPATH, "//input[@id = 'user-name']"
+    PASSWORD_SWAG = By.XPATH, "//input[@id = 'password']"
+    SUBMIT_BUTTON_SWAG = By.XPATH, "//input[@id='login-button']"
+
+    # Make my trip
+    CLOSE_LOGIN_CREATE_ACCOUNT_SCREEN = By.XPATH, "//span[@data-cy='closeModal']"
+
     # endregion Locators
+    #saucedemo Login
+
 
     # page class constructor
 
-    def __init__(self, driver, title="Flipkart Login"):
+    def __init__(self, driver, title="amazon Login"):
         super().__init__(driver)
-        self.url = self.config['base_urls']['facebook']
+        self.url = self.config['base_urls']['amazon']
         self.title = title
 
     # region General Page Actions
 
     def goto(self):
         self.goto_page(self.url)
+
+    # UI Automation
+
+    # Amazon
+
+    def test_validate_mobile_search_in_amazon(self, value):
+        self.fill_out_text_field(by_locator=self.SEARCH_AMAZON, value=value)
+        self.click_element(by_locator = self.SEARCH_SUBMIT_BUTTON, ajax=False)
+        text_searched_mobile_phone = self.get_element_text(by_locator=self.TEXT_SEARCHED_MOBILE_PHONE)
+        return text_searched_mobile_phone
+
+    def test_add_to_cart(self, buying_option):
+        self.click_element(how="xpath",
+                           path=f"//span[contains(text(),'{buying_option}')]//ancestor::a/../..//button",
+                           ajax=False)
+        self.click_element(by_locator=self.GO_TO_CART_PAGE, ajax=False)
+
+    def test_validate_todays_deal(self, appliances, option_text):
+        self.click_element(by_locator=self.TODAYS_DEAL, ajax=False)
+        self.click_element(how="xpath", path=f"//span[text()='{appliances}']", ajax=False)
+        self.checkbox_by_label(how='xpath', label_path=f"(//div//input[@name='price'])//parent::label/span/span[contains(text(),'{option_text}')]/ancestor::label",checkbox_path=f"(//div//input[@name='price'])//parent::label/span/span[contains(text(),'{option_text}')]/ancestor::label/input")
+
+    # Swag
+
+    def test_validate_login_swag(self, user_name, password):
+        self.fill_out_text_field(self.USER_NAME_SWAG, user_name)
+        self.fill_out_text_field(self.PASSWORD_SWAG, password)
+        self.click_element(by_locator=self.SUBMIT_BUTTON_SWAG, ajax=False)
+
+    # Make My Trip
+
+    def test_close_login_create_account_screen(self):
+        self.click_element(by_locator=self.CLOSE_LOGIN_CREATE_ACCOUNT_SCREEN, ajax=False)
+
+    def test_search_flight_source_to_destination(self, source, loc):
+        self.click_element(how='xpath', path=f"//span[text()='{source}']", ajax=True)
+        self.click_element(how='xpath', path=f"//input[@placeholder='{source}']/parent::div//p[text()='{loc}']",
+                           ajax=True)
+
+    def test_search_flight_date(self, day, month, year):
+        self.click_element(how='xpath', path=f"//span[text()='Departure']", ajax=False)
+        self.click_element(how='xpath', path=f"//div[text()='{month} {year}']/ancestor::div[@class='DayPicker-Month']//p[text()='{day}']", ajax=False)
+        self.click_element(how='xpath', path=f"//a[text()='Search']", ajax=False)
+
+    def test_go_to_hotel_tab(self):
+        self.click_element(how='xpath', path=f"//span[text()='Hotels']//ancestor::li[@class='menu_Hotels']", ajax=False)
+
+    def test_search_hotel(self, location):
+        self.click_element(how='xpath', path="//input[@id='city']", ajax=False)
+        self.click_element(how='xpath', path=f"//input[@placeholder='Where do you want to stay?']/parent::div/following-sibling::div//span[text()='{location}']", ajax=False)
+
+    def test_check_in_and_check_out_hotel(self, day, month, year):
+        self.click_element(how='xpath',
+                           path=f"//span[text()='{year}']/ancestor::div[@class='DayPicker-Month']//div[text()='{month}']/parent::div/following-sibling::div//div[text()='{day}']",
+                           ajax=False)
+
+    def test_select_rooms_and_guests(self, count_of_children, age_of_children):
+        self.click_element(how='xpath', path="//span[@data-testid='children_count']", ajax=False)
+        self.click_element(how='xpath', path=f"//li[text()='{count_of_children}']", ajax=False)
+        self.click_element(how='xpath', path="//span[text()='Select']", ajax=False)
+        self.click_element(how='xpath', path=f"//li[text()='{age_of_children}']", ajax=False)
+        self.click_element(how='xpath', path="//button[text()='Apply']", ajax=False)
+        self.click_element(how='xpath', path="//button[text()='Search']", ajax=False)
+
+    # API Automation
+
+    def get_request(self, base_url, auth_token):
+        resources_url = base_url + "/public/v2/users/"
+        headers = {"Authorization": auth_token}
+        get_response = requests.get(url=resources_url, headers=headers)
+        return get_response
+
+    def post_request(self, base_url, auth_token):
+        resource_url = base_url + "/public/v2/users/"
+        headers = {"Authorization": auth_token}
+        fake = Faker()
+        data = {
+            "name": "RJyoti",
+            "email": f"{fake.email()}",
+            "gender": "male",
+            "status": "active"
+        }
+        post_response = requests.post(resource_url, data=data, headers=headers)
+        return post_response
+
+    def put_request(self, base_url, auth_token, user_id):
+        resource_url = base_url + f"/public/v2/users/{user_id}"
+        headers = {"Authorization": auth_token}
+        fake = Faker()
+        data = {
+            "name": "JyotiRanjan",
+            "email": f"{fake.email()}",
+            "gender": "male",
+            "status": "active"
+        }
+        put_response = requests.put(url=resource_url, data=data, headers=headers)
+        return put_response
+
+    def delete_request(self, base_url, auth_token, id):
+        url = base_url + f"/public/v2/users/{id}"
+        headers = {"Authorization": auth_token}
+
+        response = requests.delete(url=url, headers=headers)
+        return response
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # def get_api_request(self, base_url, auth_token):
+    #     url = base_url + "/public/v2/users/"
+    #     headers = {"Authorization": auth_token}
+    #     response = requests.get(url=url, headers=headers)
+    #     return response
+    #
+    # def post_api_request(self, base_url, auth_token):
+    #     url = base_url + "/public/v2/users/"
+    #     headers = {"Authorization": auth_token}
+    #     data = {
+    #         "name": "Jyoti",
+    #         "email": "routjyotiranjan4654@gmail.com",
+    #         "gender": "male",
+    #         "status": "active"
+    #     }
+    #
+    #     response = requests.post(url=url,data=data ,headers=headers)
+    #     return response
+    #
+    # def put_api_request(self, base_url, auth_token, id):
+    #     url = base_url + f"/public/v2/users/{id}"
+    #     headers = {"Authorization": auth_token}
+    #     data = {
+    #         "name": "Jyoti Ranjan",
+    #         "email": "routjyotiranjan34567890876@gmail.com",
+    #         "gender": "male",
+    #         "status": "active"
+    #     }
+    #
+    #     response = requests.put(url=url, data=data, headers=headers)
+    #     return response
+    #
+    # def delete_api_request(self, base_url, auth_token, id):
+    #     url = base_url + f"/public/v2/users/{id}"
+    #     headers = {"Authorization": auth_token}
+    #
+    #     response = requests.delete(url=url, headers=headers)
+    #     return response
 
     def goto_with_org_code(self, org_code, reuse_username=False, custom_login=False):
         if reuse_username and custom_login:
@@ -379,16 +559,6 @@ class LoginPage(BasePage):
         login_org_name = self.get_elements_text('id', "footer-organization-name")
         return login_org_name[0]
 
-    @staticmethod
-    def org_admin_ps_error(test_start_time):
-        if login_org_name is not None:
-            my_id = organizations.name_to_id(login_org_name)
-            error = database_helpers.check_all_shards(f'''SELECT id from ps_errors WHERE organization_id = {my_id} 
-                                                    AND created_at > "{test_start_time}"''', attempts=2)
-            if error is not None:
-                raise Exception(f"PS_ERROR was created.  Error ID: {error}")
-            return error
-    # endregion PS_ERROR Checker #
 
 
     # region Logoff helpers
@@ -525,9 +695,5 @@ class LoginPage(BasePage):
 
     def create_new_account(self):
         self.click_element(how="xpath", path="//a[contains(text(),'Create new account')]", ajax=False)
-
-    def fill_fill_first_name(self):
-        self.fill_out_text_field(by_locator=)
-
 
     # endregion MFA
