@@ -805,7 +805,7 @@ class BasePage:
             element = By.ID, path
         try:
             if "/admin/notify/show" in self.driver.current_url:
-                raise Exception("A PS error was raised")
+                raise Exception("A error was raised")
             else:
                 while self.element_displayed(element):
                     WebDriverWait(self.driver, timeout).until(EC.invisibility_of_element_located, element)

@@ -2,7 +2,7 @@ import pymysql
 import yaml
 import os
 from utils import config_setup as mc, config_setup
-import psycopg2
+
 
 if mc.master_config()['environment'] == 'uat':
     database_shard_number = 1
@@ -46,11 +46,4 @@ def establish_connection(shard=None):
         return mydb
 
 
-def establish_hcm_service_database():
-    postgres_connection = psycopg2.connect(database="hcm_service_production",
-                            user='readonly',
-                            password='STARTSELECT',
-                            host='stage-hcm.plansource.com',
-                            port='30517')
 
-    return postgres_connection

@@ -86,7 +86,7 @@ class LoginPage(BasePage):
     # Amazon search
     SEARCH_AMAZON = By.XPATH, "//input[@id='twotabsearchtextbox']"
     SEARCH_SUBMIT_BUTTON = By.XPATH, "//input[@id='nav-search-submit-button']"
-    TEXT_SEARCHED_MOBILE_PHONE = By.XPATH, "//div[@cel_widget_id='MAIN-SEARCH_RESULTS-2']//div//h2"
+    TEXT_SEARCHED_MOBILE_PHONE = By.XPATH, "//div[@cel_widget_id='MAIN-SEARCH_RESULTS-3']//div//h2"
     GO_TO_CART_PAGE = By.XPATH, "//div[@id='nav-cart-text-container']"
     TODAYS_DEAL = By.XPATH, "//a[@href='/deals?ref_=nav_cs_gb']"
     RADIO_BUTTON_PRICE = By.XPATH, "(//div//input[@name='price'])[2]"
@@ -103,9 +103,9 @@ class LoginPage(BasePage):
 
     # page class constructor
 
-    def __init__(self, driver, title="amazon Login"):
+    def __init__(self, driver, title="Demo Web Login"):
         super().__init__(driver)
-        self.url = self.config['base_urls']['amazon']
+        self.url = self.config['base_urls']['demo_web_shop']
         self.title = title
 
     # region General Page Actions
