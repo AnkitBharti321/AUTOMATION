@@ -103,9 +103,9 @@ class LoginPage(BasePage):
 
     # page class constructor
 
-    def __init__(self, driver, title="Demo Web Login"):
+    def __init__(self, driver, title="Amazon Login"):
         super().__init__(driver)
-        self.url = self.config['base_urls']['demo_web_shop']
+        self.url = self.config['base_urls']['amazon']
         self.title = title
 
     # region General Page Actions
@@ -116,6 +116,22 @@ class LoginPage(BasePage):
     # UI Automation
 
     # Amazon
+
+    def sign_in_to_amazon_account(self, name, phone_number, pwd):
+        self.click_element(how='xpath', path="//a[@id='nav-link-accountList']")
+        if self.does_element_exist(how='xpath', path="//a[contains(text(),'Create your Amazon account')]"):
+            self.click_element(how='xpath', path="//a[contains(text(),'Create your Amazon account')]")
+            self.fill_out_text_field_no_locator(how='xpath', path=f"//input[@id='ap_customer_name']", value=name)
+            self.fill_out_text_field_no_locator(how='xpath', path=f"//input[@id='ap_phone_number']",
+                                                value=phone_number)
+            self.fill_out_text_field_no_locator(how='xpath', path=f"//input[@id='ap_password']",
+                                                value=pwd)
+        else:
+            self.fill_out_text_field_no_locator(how='xpath', path=f"//input[@id='ap_email_login']",
+                                                value=phone_number)
+
+        self.click_element(how='xpath', path=f"//input[@id='continue']")
+
 
     def test_validate_mobile_search_in_amazon(self, value):
         self.fill_out_text_field(by_locator=self.SEARCH_AMAZON, value=value)

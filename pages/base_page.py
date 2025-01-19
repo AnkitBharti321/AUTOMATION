@@ -32,7 +32,7 @@ class BasePage:
         return WebDriverWait(self.driver, timeout, ignored_exceptions=ignored_exceptions)
 
     # click methods #
-    def click_element(self, by_locator=None, how=None, path=None, ajax=True, alert=False, element=None):
+    def click_element(self, by_locator=None, how=None, path=None, ajax=False, alert=False, element=None):
         perf = Performance(self.driver)
 
         if ajax:
@@ -161,7 +161,7 @@ class BasePage:
         el.clear()
         el.send_keys(key)
 
-    def send_key_to_text_field_no_locator(self, how, path, keys, clear=False, ajax=True):
+    def send_key_to_text_field_no_locator(self, how, path, keys, clear=False, ajax=False):
         el = self.get_web_elements(how, path, ajax)[0]
         el.click()
         if clear:
@@ -170,7 +170,7 @@ class BasePage:
 
     # get text methods #
 
-    def get_element_text(self, by_locator=None, how=None, path=None, element=None, ajax=True):
+    def get_element_text(self, by_locator=None, how=None, path=None, element=None, ajax=False):
         if by_locator is not None:
             el = self.get_web_element(by_locator).text
         elif how is not None:
@@ -180,7 +180,7 @@ class BasePage:
             el = element.text
         return el
 
-    def get_elements_text(self, how, path, ajax=True, wait=2):
+    def get_elements_text(self, how, path, ajax=False, wait=2):
         els = self.get_web_elements(how, path, ajax, wait)
         text = map(lambda x: x.text, els)
         return list(text)
@@ -194,7 +194,7 @@ class BasePage:
 
     # checkbox methods #
 
-    def checkbox_actions(self, by_locator=None, how=None, path=None, check=True, element=None, ajax=True):
+    def checkbox_actions(self, by_locator=None, how=None, path=None, check=True, element=None, ajax=False):
         if element is None:
             if by_locator is not None:
                 el = self.get_web_element(by_locator)
@@ -240,7 +240,7 @@ class BasePage:
             label_el.click()
 
     # use this method for radio buttons which does not have checked or selected attribute in dom mentioned explicitly
-    def is_radio_button_selected(self, by_locator=None, how=None, path=None, element=None, ajax=True):
+    def is_radio_button_selected(self, by_locator=None, how=None, path=None, element=None, ajax=False):
         if element is None:
             if by_locator is not None:
                 el = self.get_web_element(by_locator, ajax)
@@ -270,7 +270,7 @@ class BasePage:
         el = self.get_web_element(by_locator, wait=wait)
         return el.get_attribute(attribute)
 
-    def get_elements_attribute(self, how, path, attribute, ajax=True):
+    def get_elements_attribute(self, how, path, attribute, ajax=False):
         attrs = []
         els = self.get_web_elements(how, path, ajax)
         for i in els:
@@ -377,7 +377,7 @@ class BasePage:
                     el_list[index].click()
 
     # elements displayed method can be used when you have an xpath or an ID or when you are wanting to check for multiple elements#
-    def elements_displayed(self, how, path, wait=3, ajax=True):
+    def elements_displayed(self, how, path, wait=3, ajax=False):
         count = 0
         displayed_list = []
 
@@ -431,7 +431,7 @@ class BasePage:
 
     # element present/exists methods #
 
-    def does_element_exist(self, by_locator=None, how=None, path=None, ajax=True, timeout=10):
+    def does_element_exist(self, by_locator=None, how=None, path=None, ajax=False, timeout=10):
         if ajax:
             self.wait_for_ajax()
 
@@ -454,8 +454,6 @@ class BasePage:
     # goto methods
     def goto_page(self, page_url):
         self.driver.get(page_url)
-        if "/admin/notify/show" in self.driver.current_url:
-            raise Exception(f"A PS error was raised after navigating directly to {page_url}")
 
     def refresh_page(self, wait=None):
         if wait:

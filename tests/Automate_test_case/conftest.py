@@ -336,7 +336,7 @@ def pytest_runtest_makereport(item, call):
             except Exception:
                 pass
 
-        item.session.results[item] = result
+        # item.session.results[item] = result
 
 
 def version_urls():
