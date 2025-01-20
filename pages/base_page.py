@@ -127,6 +127,11 @@ class BasePage:
         el.clear()
         el.send_keys(value)
 
+    def fill_out_text_field_no_locator_for_applying_instahyre(self, how, path, value):
+        el = self.get_web_elements(how, path)[0]
+        el.click()
+        el.send_keys(value)
+
     def fill_out_text_field_date_picker(self, by_locator, string):
         el = self.get_web_element(by_locator)
         el.click()
