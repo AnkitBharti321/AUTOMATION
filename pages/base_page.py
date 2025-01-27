@@ -11,6 +11,7 @@ from database_connections import db_base
 from utils import data_helpers, file_helpers, database_helpers
 from dateutil.parser import parse
 import time
+import pyautogui
 
 # this is the parent of all pages #
 from utils.performance_helpers import Performance
@@ -216,6 +217,17 @@ class BasePage:
         if ajax:
             self.wait_for_ajax()
 
+    def wait_for_loading_animation(self):
+        count = 0
+        if self.short_check_for_displayed_elements("xpath", "//div[@class='loadingoverlay']"):
+            while self.does_element_exist(self.LOADING_ANIMATION_ELEMENT):
+                self.sleep(1)
+                count += 1
+                if not self.does_element_exist(self.LOADING_ANIMATION_ELEMENT):
+                    break
+                elif count >= 15:
+                    raise TimeoutError("Loading took longer than 15 seconds")
+
     def is_checkbox_checked(self, by_locator=None, how=None, path=None, element=None):
         if element is None:
             if by_locator is not None:
@@ -292,6 +304,45 @@ class BasePage:
         else:
             el = element
         return el.value_of_css_property(attribute)
+
+    def upload_a_file(self, path, file_name):
+        element_present = EC.presence_of_element_located(
+            (By.XPATH, path))  # Example xpath
+
+        WebDriverWait(self.driver, 10).until(element_present).click()  # This opens the windows file selector
+        pyautogui.keyDown('shift')  # hold down the shift key
+        pyautogui.keyDown('command')  # press the left arrow key
+        pyautogui.press('g')
+        self.sleep(2)
+
+        pyautogui.write("Ankit_resume")
+        pyautogui.keyUp('shift')
+        pyautogui.keyUp('command')
+        self.sleep(2)
+
+        pyautogui.press('down')
+        self.sleep(4)
+
+        pyautogui.press('down')
+        self.sleep(4)
+
+        pyautogui.press('down')
+        self.sleep(4)
+
+        pyautogui.press('return')
+        self.sleep(4)
+        pyautogui.press('return')
+
+        self.sleep(4)
+        pyautogui.press('return')
+
+
+        a =5
+
+
+
+
+
 
     # select methods #
     def select_list_by_text(self, by_locator=None, value=None, select_object=None):

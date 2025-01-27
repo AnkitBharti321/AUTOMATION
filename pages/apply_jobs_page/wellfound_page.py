@@ -9,7 +9,7 @@ from pages.base_page import BasePage
 
 
 
-class InstahyrePage(BasePage):
+class WellfoundPage(BasePage):
     # region Locators
     FIRST_NAME_FIELD = By.ID, "FirstName"
     LAST_NAME_FIELD = By.ID, "LastName"
@@ -24,9 +24,9 @@ class InstahyrePage(BasePage):
 
 
     # page class constructor
-    def __init__(self, driver, title="insthyre Login"):
+    def __init__(self, driver, title="Wellfound Login"):
         super().__init__(driver)
-        self.url = self.config['base_urls']['instahyre']
+        self.url = self.config['base_urls']['wellfound']
         self.title = title
 
     # region General Page Actions
@@ -37,33 +37,94 @@ class InstahyrePage(BasePage):
     # UI Automation
 
     # Login
-    def login_to_instahyre(self, email, password):
-        self.click_element(how='xpath', path="//a[text()='Login']")
-        self.fill_out_text_field_no_locator(how='xpath', path="//input[@id='email']", value=email)
-        self.fill_out_text_field_no_locator(how='xpath', path="//input[@id='password']", value=password)
-        self.click_element(how='xpath', path="//button[text()='Login']")
+    def login_to_wellfound(self, email, password):
+        self.click_element(how='xpath', path="(//a[text()='Log In'])[1]")
+        self.fill_out_text_field_no_locator(how='xpath', path="//input[@id='user_email']", value=email)
+        self.fill_out_text_field_no_locator(how='xpath', path="//input[@id='user_password']", value=password)
+        self.click_element(how='xpath', path="//input[@type='submit']")
 
     def sign_out_to_instahyre(self):
         if self.does_element_exist(how='xpath', path="//a[text()='Sign out']"):
             self.click_element(how='xpath', path="//a[text()='Sign out']")
 
 
-    def apply_jobs_in_dashboard_page(self):
+    def apply_jobs_in_wellfound_dashboard_page(self, interest):
         self.sleep(7)
         applied_jobs = []
+        expected_roles = ['Senior QA Engineer', 'QA Engineer', 'Test Engineer']
 
-        if self.does_element_exist(how='xpath', path="//button[@id='interested-btn']"):
-            self.click_element(how='xpath', path="(//button[@id='interested-btn'])[1]")
+        if self.does_element_exist(how='xpath', path="//a[@class='content-center']"):
+            self.click_element(how='xpath', path="(//a[@class='content-center'])[1]")
             self.sleep(5)
-            while self.does_element_exist(how='xpath', path="//div[@id='employer-summary']/h2"):
-                self.sleep(4)
-                if self.does_element_exist(how='xpath', path="//*[contains(text(),'No matching opportunities found')]"):
-                    break
-                applied_jobs.append(self.get_element_text(how='xpath', path="//div[@id='employer-summary']/h2"))
-                self.click_element(how='xpath', path="(//button[text()='Apply'])[1]")
 
-        else:
-            return applied_jobs
+
+
+            if self.does_element_exist(how='xpath', path="(//h4[contains(text(),'QA Engineer')]/../../..//button)[2]"):
+
+                self.click_element(how='xpath', path="(//h4[contains(text(),'QA Engineer')]/../../..//button)[2]")
+                self.wait_for_loading_animation()
+                self.sleep(4)
+                self.fill_out_text_field_no_locator(how='xpath', path="//textarea[contains(@id,'input')]", value=interest)
+                self.wait_for_loading_animation()
+                self.click_element(how='xpath', path="(//button[@type='submit'])[2]")
+                self.refresh_page()
+
+            elif self.does_element_exist(how='xpath', path="(//h4[contains(text(),'Test Engineer')]/../../..//button)[2]"):
+
+                self.click_element(how='xpath', path="(//h4[contains(text(),'Test Engineer')]/../../..//button)[2]")
+                self.wait_for_loading_animation()
+                self.sleep(4)
+                self.fill_out_text_field_no_locator(how='xpath', path="//textarea[contains(@id,'input')]",
+                                                    value=interest)
+                self.wait_for_loading_animation()
+                self.click_element(how='xpath', path="(//button[@type='submit'])[2]")
+                self.refresh_page()
+
+
+            elif self.does_element_exist(how='xpath', path="(//h4[contains(text(),'Senior QA Engineer')]/../../..//button)[2]"):
+
+                self.click_element(how='xpath', path="(//h4[contains(text(),'Senior QA Engineer')]/../../..//button)[2]")
+                self.wait_for_loading_animation()
+                self.sleep(4)
+                self.fill_out_text_field_no_locator(how='xpath', path="//textarea[contains(@id,'input')]",
+                                                    value=interest)
+                self.wait_for_loading_animation()
+                self.click_element(how='xpath', path="(//button[@type='submit'])[2]")
+                self.refresh_page()
+
+            elif self.does_element_exist(how='xpath', path="(//h4[contains(text(),'QA Engineer')]/../../..//button)[2]"):
+
+                self.click_element(how='xpath', path="(//h4[contains(text(),'QA Engineer')]/../../..//button)[2]")
+                self.wait_for_loading_animation()
+                self.sleep(4)
+                self.fill_out_text_field_no_locator(how='xpath', path="//textarea[contains(@id,'input')]",
+                                                    value=interest)
+                self.wait_for_loading_animation()
+                self.click_element(how='xpath', path="(//button[@type='submit'])[2]")
+                self.refresh_page()
+
+            elif self.does_element_exist(how='xpath', path="(//h4[contains(text(),'Lead QA Engineer')]/../../..//button)[2]"):
+
+                self.click_element(how='xpath', path="(//h4[contains(text(),'Lead QA Engineer')]/../../..//button)[2]")
+                self.wait_for_loading_animation()
+                self.sleep(4)
+                self.fill_out_text_field_no_locator(how='xpath', path="//textarea[contains(@id,'input')]",
+                                                    value=interest)
+                self.wait_for_loading_animation()
+                self.click_element(how='xpath', path="(//button[@type='submit'])[2]")
+                self.refresh_page()
+
+            elif self.does_element_exist(how='xpath', path="(//h4[contains(text(),'Automation Tester')]/../../..//button)[2]"):
+
+                self.click_element(how='xpath', path="(//h4[contains(text(),'Automation Tester')]/../../..//button)[2]")
+                self.wait_for_loading_animation()
+                self.sleep(4)
+                self.fill_out_text_field_no_locator(how='xpath', path="//textarea[contains(@id,'input')]",
+                                                    value=interest)
+                self.wait_for_loading_animation()
+                self.click_element(how='xpath', path="(//button[@type='submit'])[2]")
+                self.refresh_page()
+
 
         return applied_jobs
 
